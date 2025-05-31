@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String    @id @default(uuid())
+  email       String    @unique
+  password    String
+  name        String?
+  role        Role      @default(USER)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  lostItems   LostItem[]
+  foundItems  FoundItem[]
+  claims      Claim[]
+  chats       Chat[]
+}
+
+model LostItem {
+  id          String    @id @default(uuid())
+  title       String
+  description String
+  category    String
+  location    String
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  matches     Match[]
+  claims      Claim[]
+}
+
+model FoundItem {
+  id          String    @id @default(uuid())
+  title       String
+  description String
+  category    String
+  location    String
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  matches     Match[]
+}
+
+model Match {
+  id          String    @id @default(uuid())
+  lostItem    LostItem  @relation(fields: [lostItemId], references: [id])
+  lostItemId  String
+  foundItem   FoundItem @relation(fields: [foundItemId], references: [id])
+  foundItemId String
+  score       Float
+  createdAt   DateTime  @default(now())
+}
+
+model Claim {
+  id          String    @id @default(uuid())
+  lostItem    LostItem  @relation(fields: [lostItemId], references: [id])
+  lostItemId  String
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String
+  status      ClaimStatus @default(PENDING)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Chat {
+  id          String    @id @default(uuid())
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String
+  message     String
+  createdAt   DateTime  @default(now())
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum ClaimStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
